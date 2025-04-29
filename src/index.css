@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Noto Sans";
-  src: url(/public/fonts/NotoSans-VariableFont_wdth\,wght.ttf) format("truetype");
+  src: url(/fonts/NotoSans-VariableFont_wdth\,wght.ttf) format("truetype");
   font-weight: 400 500 700;
   font-style: normal;
   font-display: swap;
