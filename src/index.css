@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant btn-checked (&[aria-checked="true"]);
+
 @font-face {
   font-family: "Noto Sans";
   src: url(/fonts/NotoSans-VariableFont_wdth\,wght.ttf) format("truetype");
@@ -8,7 +12,8 @@
   font-display: swap;
 }
 
-.colors{
+
+:root{
 --color-neutral-clr-900: hsl(227, 75%, 14%);
 --color-neutral-clr-800: hsl(226, 25%, 17%);
 --color-neutral-clr-700: hsl(225, 23%, 24%);
@@ -54,7 +59,3 @@
 @utility light-gradient{
   background: var(--bg-light-gradient);
 }
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-@custom-variant btn-checked (&[aria-checked="true"]);
