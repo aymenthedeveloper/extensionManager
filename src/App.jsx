@@ -1,5 +1,6 @@
-import {use, useEffect, useState } from "react";
+import {useEffect, useMemo } from "react";
 import {useStore} from "/src/assets/store.js";
+import cn from "./assets/utils.js";
 
 function App() {
   return (
@@ -26,15 +27,16 @@ function Wrapper({children}){
 }
 
 function ExtensionCard({name, description, logo, isActive, isAdded}){
-  const [isChecked, setIsChecked] = useState(isActive);
-  const activateExtension = useStore(store => store.activateExtension);
-  const toggleAddExtension = useStore(store => store.toggleAddExtension);
+  const updateExtension = useStore(store => store.updateExtension);
   function handleClick(){
-    setIsChecked(isChecked => !isChecked)
-    activateExtension(name);
+    updateExtension(name, {isActive: !isActive});
   }
-  function handleRemove(){
-    toggleAddExtension(name)
+  function toggleRemove(){
+    if (isAdded) {
+      updateExtension(name, {isAdded: false, isActive: false});
+    } else {
+      updateExtension(name, {isAdded: true, isActive: true});
+    }
   }
 
   return (
@@ -47,16 +49,16 @@ function ExtensionCard({name, description, logo, isActive, isAdded}){
         <p className="text-[15px]/5.5 text-clr-neutral-600 dark:text-clr-neutral-200">{description}</p>
       </div>
       <div className="col-span-2 flex justify-between items-center pt-0.25">
-        <button className="border cursor-pointer border-black/30 dark:border-clr-neutral-100/50 pl-[calc(var(--pad-x)+1px)] pr-[calc(var(--pad-x)-1px)] h-9 rounded-2xl tracking-tight [--pad-x:--spacing(4)] dark:text-white hover:bg-clr-red-700 hover:text-white hover:border-clr-red-700/30 focus:ring-1 focus:ring-clr-red-700 focus:bg-transparent focus:text-black" onClick={handleRemove}>{isAdded? "Remove": "Install"}</button>
-        <ToggleBtn isChecked={isChecked} handleClick={handleClick}></ToggleBtn>
+        <button className={cn("border cursor-pointer border-black/30 dark:border-clr-neutral-100/50 pl-[calc(var(--pad-x)+1px)] pr-[calc(var(--pad-x)-1px)] h-9 rounded-2xl tracking-tight [--pad-x:--spacing(4)] dark:text-white hover:bg-clr-red-700 hover:text-white hover:border-clr-red-700/30  focus:bg-clr-red-500 focus:text-black dark:focus:text-white", !isAdded && "hover:bg-green-700 focus:bg-green-500")} onClick={toggleRemove}>{isAdded? "Remove": "Install"}</button>
+        <ToggleBtn isActive={isActive} handleClick={handleClick}></ToggleBtn>
       </div>
     </div>
   )
 }
 
-function ToggleBtn({isChecked, handleClick}){
+function ToggleBtn({isActive, handleClick}){
   return(
-    <button className={`relative w-(--btn-w) h-(--btn-h) rounded-[calc(var(--btn-h)/2)] bg-clr-neutral-300 dark:bg-clr-neutral-600 cursor-pointer duration-200 after:content-[""] after:absolute after:rounded-full after:top-(--inner-pad) after:left-(--inner-pad) after:size-(--circle-size) after:bg-white after:duration-200  [--btn-h:--spacing(5)] [--btn-w:--spacing(9.25)] [--inner-pad:--spacing(0.5)] [--circle-size:calc(var(--btn-h)-var(--inner-pad)*2)] ${isChecked && "after:left-[calc(var(--btn-w)-var(--circle-size)-var(--inner-pad))] bg-clr-red-700 dark:bg-clr-red-400"}`} onClick={handleClick} role="switch" aria-label="Toggle button">
+    <button className={`relative w-(--btn-w) h-(--btn-h) rounded-[calc(var(--btn-h)/2)] bg-clr-neutral-300 dark:bg-clr-neutral-600 cursor-pointer duration-200 after:content-[""] after:absolute after:rounded-full after:top-(--inner-pad) after:left-(--inner-pad) after:size-(--circle-size) after:bg-white after:duration-200  [--btn-h:--spacing(5)] [--btn-w:--spacing(9.25)] [--inner-pad:--spacing(0.5)] [--circle-size:calc(var(--btn-h)-var(--inner-pad)*2)] ${isActive && "after:left-[calc(var(--btn-w)-var(--circle-size)-var(--inner-pad))] bg-clr-red-700 dark:bg-clr-red-400"}`} onClick={handleClick} role="switch" aria-label="Toggle button">
     </button>
   )
 }
@@ -64,15 +66,20 @@ function ToggleBtn({isChecked, handleClick}){
 function ExtensionList(){
   const filter = useStore(store => store.filter);
   const extensionsList = useStore(store => store.extensionsList);
-  const sortedList = extensionsList.sort(ext =>{
-    return ext.isAdded? 0: 1;
-  })
+  const sortedList = useMemo(()=>{
+    return extensionsList.sort(ext =>{
+      return ext.isAdded? 0: 1;
+    })
+  }, [filter, extensionsList]);
+
   return (
     <div className="grid gap-y-5.5 mt-10.5 desktop:mt-4 grid-cols-[repeat(auto-fit,minmax(341px,1fr))]  max-xs:grid-cols-1 gap-x-3.75 desktop:gap-y-4.25 desktop:auto-rows-[195px]">
-      {extensionsList.map(extension =>(
-        (filter == 'all' || (filter == 'active' && extension.isActive) || (filter == 'inactive' && !extension.isActive)) &&
-        <ExtensionCard {...extension} />  
-      ))}
+      {sortedList.map(extension => {
+        const {isAdded, isActive} = extension;
+        return (filter == 'all' || (filter == 'active' && isActive && isAdded) || (filter == 'inactive' && !isActive && isAdded)) &&
+          <ExtensionCard {...extension} />  
+        }  
+      )}
     </div>
   )
 }
