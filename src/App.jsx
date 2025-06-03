@@ -65,18 +65,18 @@ function ToggleBtn({isActive, handleClick}){
 
 function ExtensionList(){
   const filter = useStore(store => store.filter);
-  const extensionsList = useStore(store => store.extensionsList);
-  const sortedList = useMemo(()=>{
-    return extensionsList.sort(ext =>{
-      return ext.isAdded? 0: 1;
-    })
-  }, [filter, extensionsList]);
-
+  let extensionsList = useStore(store => store.extensionsList);
+  if (filter == "inactive") {
+    extensionsList = extensionsList.sort(ext =>{
+        return ext.isAdded? 0: 1;
+      })
+    }
+  
   return (
     <div className="grid gap-y-5.5 mt-10.5 desktop:mt-4 grid-cols-[repeat(auto-fit,minmax(341px,1fr))]  max-xs:grid-cols-1 gap-x-3.75 desktop:gap-y-4.25 desktop:auto-rows-[195px]">
-      {sortedList.map(extension => {
+      {extensionsList.map(extension => {
         const {isAdded, isActive} = extension;
-        return (filter == 'all' || (filter == 'active' && isActive && isAdded) || (filter == 'inactive' && !isActive && isAdded)) &&
+        return (filter == 'all' || (filter == 'active' && isActive && isAdded) || (filter == 'inactive' && !isActive)) &&
           <ExtensionCard {...extension} />  
         }  
       )}
